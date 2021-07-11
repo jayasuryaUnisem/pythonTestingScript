@@ -25,6 +25,7 @@ setP_li = 2
 setP_rd = 5
 
 def check(imei, hw_ver, firm_ver, air_temp, air_pers, air_humidity, leaf_wetness, rain, wind_dir, wind_speed, soil_temp, p_soil_mois, s_soil_mois, light_inten, solar_radi):
+    print("***********************************")
     if(len(imei)==15):
         print("IMEI Done")
     else:
@@ -79,6 +80,28 @@ def check(imei, hw_ver, firm_ver, air_temp, air_pers, air_humidity, leaf_wetness
         print("Soil Temperature Test Done")
     else:
         print("Soil Temperature Test Failed")
+
+    if(p_soil_mois > setP_psm_min and p_soil_mois < setP_ah_max):
+        print("Primery Soil Mositure Sensor Test Done")
+    else:
+        print("Primery Soil Mositure Sensor Test Failed")
+
+    if(s_soil_mois > setP_ssm_min and s_soil_mois < setP_ssm_max):
+        print("Secondary Soil Mositure Sensor Test Done")
+    else:
+        print("Secondary Soil Mositure Sensor Test Failed")
+
+    if(light_inten > setP_li):
+        print("Light Intensity Test Done")
+    else:
+        print("Light Intensity Test Failed")
+
+    if(solar_radi > setP_rd):
+        print("Solar Radiation Sensor Test Done")
+    else:
+        print("Solar Radiation Senor Test Failed")
+
+    print("***********************************")
 
 
 
@@ -155,3 +178,5 @@ while True:
             print("Light Intensity: ", light_int)
             print("Solar Radiation: ", solar_radi)
             print("***********************************")
+            check(imei, hw_ver, firm_ver, air_temp, air_pressure, air_humidity, leaf_wetness,
+            rain, wind_dir, wind_speed, soil_temp, p_soil_mois, s_soil_mois, light_int, solar_radi)
