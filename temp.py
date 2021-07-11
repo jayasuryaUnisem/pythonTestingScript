@@ -103,7 +103,50 @@ def check(imei, hw_ver, firm_ver, air_temp, air_pers, air_humidity, leaf_wetness
 
     print("***********************************")
 
+def optionCheck():
+    value = int(input(
+        "1. For check the default values\n2. For change the default values\nPlease Enter the option:"))
+    if value == 1:
+        print("***********************************")
+        print("Hardware Version: ", setP_hw)
+        print("Firmware Version: ", setP_fw)
+        print("Air Temperature min setpoint: ", setP_at_min, ", max setpoint: ", setP_at_max)
+        print("Air Pressure min setpoint: ", setP_ap_min, ", Air Pressure max setpoint: ", setP_ap_max)
+        print("Air Humidity min setpoint: ", setP_ah_min, "Air Humidity max setpoint: ", setP_ah_max)
+        print("Leaf Wetness setpoint: ", setP_lw)
+        print("Rain in MM setpoint: ", setP_rain)
+        print("Wind Speed setpoint: ", setP_ws)
+        print("Soil Temperature min setpoint: ", setP_at_min, ", Soil Temperature max setpoint: ", setP_st_max)
+        print("Primery Soil Mositure min setpoint: ", setP_psm_min, "Primery Soil Mositure max setpoint: ", setP_psm_max)
+        print("Secondary Soil Mositure min setpoint: ", setP_ssm_min, "Secondary Soil Mositure max setpoint: ", setP_ssm_max)
+        print("Light Intensity Setpoint: ", setP_li)
+        print("Solar Radiation: ", setP_rd)
+        print("***********************************")
+    elif value == 2:
+        print("***********************************")
+        setP_hw = float(input("Enter Hardware Version: "))
+        setP_fw = float(input("Enter Firmware Version: "))
+        setP_at_min = float(input("Enter Air Temperature Min Setpoint: "))
+        setP_at_max = float(input("Enter Air Temperature Max Setpoint: "))
+        setP_ap_min = float(input("Enter Air Pressure Min Setpoint: "))
+        setP_ap_max = float(input("Enter Air Pressure Max Setpoint: "))
+        setP_ah_min = float(input("Enter Air Humidity Min Setpoint: "))
+        setP_ah_max = float(input("Enter Air Humidity Max Setpoint: "))
+        setP_lw = int(input("Enter Leaf Wetness Setpoint: "))
+        setP_rain = float(input("Enter Rain in mm Setpoint: "))
+        setP_ws = float(input("Enter Wind speed Setpoint: "))
+        setP_st_min = int(input("Enter Soil Temperature min Setpoint: "))
+        setP_st_max = int(input("Enter Soil Temperature max Setpoint: "))
+        setP_psm_min = int(input("Enter Primery Soil Moisture Min Setpoint: "))
+        setP_psm_max = int(input("Enter Primery Soil Moisture Max Setpoint: "))
+        setP_ssm_min = int(input("Enter Secondry Soil Mositure Min Setpoint: "))
+        setP_ssm_max = int(input("Enter Secodary Soil Mositure Max Setpoint: "))
+        setP_li = int(input("Enter Light Intersity Setpoint: "))
+        setP_rd = int(input("Enter Solar Radation Level Setpoint: "))
+        print("***********************************")
 
+
+optionCheck()
 
 while True:
     cc = ser.readline()
