@@ -2,8 +2,11 @@ import serial
 import time
 import json
 
+#Serial Communication configs
 ser = serial.Serial("COM7", 115200)
 
+
+#Defined or Default Setpoint for compare the sensor values
 setP_hw = 3.0
 setP_fw = 2.0
 setP_at_min = 23.0
@@ -24,6 +27,8 @@ setP_ssm_max = 8000
 setP_li = 2
 setP_rd = 5
 
+
+#Fuction for sensor value test and indication
 def check(imei, hw_ver, firm_ver, air_temp, air_pers, air_humidity, leaf_wetness, rain, wind_dir, wind_speed, soil_temp, p_soil_mois, s_soil_mois, light_inten, solar_radi):
     print("***********************************")
     if(len(imei)==15):
@@ -103,25 +108,37 @@ def check(imei, hw_ver, firm_ver, air_temp, air_pers, air_humidity, leaf_wetness
 
     print("***********************************")
 
+
+def setPointView():
+    print("***********************************")
+    print("Hardware Version: ", setP_hw)
+    print("Firmware Version: ", setP_fw)
+    print("Air Temperature min setpoint: ",
+          setP_at_min, ", max setpoint: ", setP_at_max)
+    print("Air Pressure min setpoint: ", setP_ap_min,
+          ", Air Pressure max setpoint: ", setP_ap_max)
+    print("Air Humidity min setpoint: ", setP_ah_min,
+          "Air Humidity max setpoint: ", setP_ah_max)
+    print("Leaf Wetness setpoint: ", setP_lw)
+    print("Rain in MM setpoint: ", setP_rain)
+    print("Wind Speed setpoint: ", setP_ws)
+    print("Soil Temperature min setpoint: ", setP_at_min,
+          ", Soil Temperature max setpoint: ", setP_st_max)
+    print("Primery Soil Mositure min setpoint: ", setP_psm_min,
+          "Primery Soil Mositure max setpoint: ", setP_psm_max)
+    print("Secondary Soil Mositure min setpoint: ", setP_ssm_min,
+          "Secondary Soil Mositure max setpoint: ", setP_ssm_max)
+    print("Light Intensity Setpoint: ", setP_li)
+    print("Solar Radiation: ", setP_rd)
+    print("***********************************")
+
+
+#option for change the setpoint and check the setpoints --> This should happen before the main loop
 def optionCheck():
     value = int(input(
         "1. For check the default values\n2. For change the default values\nPlease Enter the option:"))
     if value == 1:
-        print("***********************************")
-        print("Hardware Version: ", setP_hw)
-        print("Firmware Version: ", setP_fw)
-        print("Air Temperature min setpoint: ", setP_at_min, ", max setpoint: ", setP_at_max)
-        print("Air Pressure min setpoint: ", setP_ap_min, ", Air Pressure max setpoint: ", setP_ap_max)
-        print("Air Humidity min setpoint: ", setP_ah_min, "Air Humidity max setpoint: ", setP_ah_max)
-        print("Leaf Wetness setpoint: ", setP_lw)
-        print("Rain in MM setpoint: ", setP_rain)
-        print("Wind Speed setpoint: ", setP_ws)
-        print("Soil Temperature min setpoint: ", setP_at_min, ", Soil Temperature max setpoint: ", setP_st_max)
-        print("Primery Soil Mositure min setpoint: ", setP_psm_min, "Primery Soil Mositure max setpoint: ", setP_psm_max)
-        print("Secondary Soil Mositure min setpoint: ", setP_ssm_min, "Secondary Soil Mositure max setpoint: ", setP_ssm_max)
-        print("Light Intensity Setpoint: ", setP_li)
-        print("Solar Radiation: ", setP_rd)
-        print("***********************************")
+        setPointView()
     elif value == 2:
         print("***********************************")
         setP_hw = float(input("Enter Hardware Version: "))
@@ -144,16 +161,28 @@ def optionCheck():
         setP_li = int(input("Enter Light Intersity Setpoint: "))
         setP_rd = int(input("Enter Solar Radation Level Setpoint: "))
         print("***********************************")
+        print("")
+
+    value = int(input("1. Home Menu\n2. Exit and Enter to the main Loop\nEnter the Option: "))
+    if value == 1:
+        optionCheck() #recursion funtion
+    elif value == 2:
+        print("Entering into the main loop")
+    else:
+        print("Entering into the main loop")
 
 
-optionCheck()
+#this function should enable when using only in the raspberry Pi
+#optionCheck()
 
+
+#main loop starts from here
 while True:
     cc = ser.readline()
-    cc = cc.rstrip().lstrip()
-    cc = str(cc, 'utf-8')
+    cc = cc.rstrip().lstrip() #remove r' (raw string)
+    cc = str(cc, 'utf-8') #remove b' (byte string to string)
     #print(cc)
-    if(len(cc) > 0):
+    if(len(cc) > 0):  #len should be greater than 0
         print(".")
         if(cc == 'Device Powered ON'):
             print("***********************************")
@@ -186,7 +215,7 @@ while True:
             print("***********************************")
 
 
-        if(cc[0] == '{'):
+        if(cc[0] == '{'): #JSON fromat starts from {
             tempJson = json.loads(cc)
             imei = tempJson.get("Z1")
             hw_ver = float(tempJson.get("Z4"))
