@@ -4,10 +4,13 @@ import time
 import json
 from datetime import datetime
 
+gpio.cleanup()
 try:
     now = datetime.now()
-    fname = "tReport_"+str(now.strftime("%m%d%y%H%M%S"))+".txt"
+    fname = "tReport_"+str(now.strftime("%m%d%y%H%M%S"))+".csv"
     file = open(fname, "a")
+    file.write("IMEI,SD Card,HW Ver,Firm Ver,Air Temp,Air Pressure,AIr Humidity,Lead Wetness,Rain,Wind Die,Wind Speed,Soil Temp,P Soil Mois,S Soil Mois,Light Inten, Solar Radi,Remarks\n")
+    file.close()
 except:
     print("File in not created!!")
 
@@ -23,6 +26,9 @@ dr_led = 24
 st_led = 23
 lux_led = 19
 reset_button = 26
+start_button = 13
+ip_start = 6
+
 
 gpio.setwarnings(False)
 gpio.setmode(gpio.BCM)
@@ -40,8 +46,13 @@ gpio.setup(lux_led, gpio.OUT)
 gpio.setup(reset_button, gpio.IN, pull_up_down=gpio.PUD_UP)
 
 #Serial Communication configs
-ser = serial.Serial("/dev/ttyUSB0", 115200)
-
+try:
+    ser = serial.Serial("/dev/ttyUSB0", 115200)
+except:
+    gpio.cleanup()
+    while 1:
+        print("Serial Port Not connected !")
+        time.sleep(1)
 ###gpio.cleanup()
 
 #Defined or Default Setpoint for compare the sensor values
@@ -66,6 +77,17 @@ setP_li = 2
 setP_rd = 5
 
 
+
+def csvWrite(imei, hw_ver, firm_ver, air_temp, air_p, air_hum, lw, rain, wDir, wSpeed, soil_temp, psm, ssm, light_int, s_radi):
+    try:
+        file = open(fname, "a")
+        payload = str(imei)+","+"OK,"+str(hw_ver)+","+str(firm_ver)+","+str(air_temp)+","+str(air_p)+","+str(air_hum)+","+str(lw)+","+str(rain)+","+str(wDir)+","+str(wSpeed)+","+str(soil_temp)+","+str(psm)+","+str(ssm)+","+str(light_int)+","+str(solar_radi)+",PASS\n"
+        file.write(payload+"\n")
+        print("File Write Successful")
+        file.close()
+    except Exception as err:
+        print("File Write Error")
+        print(err)
 #Fuction for sensor value test and indication
 def check(imei, hw_ver, firm_ver, air_temp, air_p, air_humidity, leaf_wetness, rain, wind_dir, wind_speed, soil_temp, p_soil_mois, s_soil_mois, light_inten, solar_radi):
     print("***********************************")
@@ -236,7 +258,7 @@ while True:
 #    print(cc)
     if(len(cc) > 0):  #len should be greater than 0
         #print(".")
-	print(cc)
+	    #print(cc)
         if(cc == "Device Powered ON"):
             print("***********************************")
             print("Device on Ack received")
@@ -268,13 +290,13 @@ while True:
             print("\n***********************************")
             print("Sleep Mode")
             print("***********************************")
-            while(gpio.input(reset_button)==1):
-    		    time.sleep(1)
+            
 
 
         if(cc[0] == '{'): #JSON fromat starts from {
             tempJson = json.loads(cc)
             imei = tempJson.get("Z1")
+            imei = str(imei.encode("utf-8"))
             hw_ver = float(tempJson.get("Z4"))
             firm_ver = float(tempJson.get("Z8"))
             air_temp = float(tempJson["Z5"]["A"])
@@ -283,6 +305,7 @@ while True:
             leaf_wetness = int(tempJson["Z5"]["D"])
             rain = float(tempJson["Z5"]["E"])
             wind_dir = tempJson["Z5"]["F"]
+            wind_dir = str(wind_dir.encode("utf-8"))
             wind_speed = float(tempJson["Z5"]["G"])
             soil_temp = float(tempJson["Z5"]["H"])
             p_soil_mois = int(tempJson["Z5"]["I"])
@@ -309,6 +332,12 @@ while True:
             print("***********************************")
             check(imei, hw_ver, firm_ver, air_temp, air_pressure, air_humidity, leaf_wetness,
             rain, wind_dir, wind_speed, soil_temp, p_soil_mois, s_soil_mois, light_int, solar_radi)
+
+            csvWrite(imei, hw_ver, firm_ver, air_temp, air_pressure, air_humidity, leaf_wetness,
+            rain, wind_dir, wind_speed, soil_temp, p_soil_mois, s_soil_mois, light_int, solar_radi)
+
+            while(gpio.input(reset_button)==1):
+    		    time.sleep(1)
             time.sleep(5)
             
     		#print("Press Reset button!")
