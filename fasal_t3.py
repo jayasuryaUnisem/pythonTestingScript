@@ -9,14 +9,19 @@ fname_static = "tReportStatic.csv"
 
 gpio.cleanup()
 try:
-    if fname_static in os.listdir():
+    arr = os.listdir(os.getcwd())
+    print(arr)
+    if fname_static in arr:
         print("File Already Exist!!")
     else:
         file = open(fname_static, "a")
         file.write("DateTime,IMEI,SD Card,HW Ver,Firm Ver,Air Temp,Air Pressure,AIr Humidity,Lead Wetness,Rain,Wind Die,Wind Speed,Soil Temp,P Soil Mois,S Soil Mois,Light Inten, Solar Radi,Remarks\n")
         file.close()
-except:
+except Exception as err:
+    arr = os.listdir()
+    print(arr)
     print("File in not created!!")
+    print("Error: ", err)
 
 
 def DateTime():
@@ -35,8 +40,8 @@ ws_led = 25
 dr_led = 24
 st_led = 23
 lux_led = 19
-reset_button = 26
-start_button = 5
+reset_button = 2
+start_button = 3
 ip_start = 6
 pass_led = 13
 
@@ -77,10 +82,10 @@ setP_at_max = 30.0
 setP_ap_min = 80000.0
 setP_ap_max = 100000.0
 setP_ah_min = 40.0
-setP_ah_max = 80.0
+setP_ah_max = 90.0
 setP_lw = 20
 setP_rain = 1.2
-setP_ws = 0.2
+setP_ws = 0.5
 setP_st_min = 20
 setP_st_max = 32
 setP_psm_min = 5900
@@ -363,6 +368,7 @@ while True:
                 temp = 1
         gpio.output(ip_start, gpio.HIGH)
         while gpio.input(reset_button)==1:
+            #print(gpio.input(reset_button))
             time.sleep(1)
         gpioclean()
 
