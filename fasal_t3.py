@@ -2,19 +2,27 @@ import RPi.GPIO as gpio
 import serial
 import time
 import json
+import os
 from datetime import datetime
 
 fname_static = "tReportStatic.csv"
 
 gpio.cleanup()
 try:
-    now = datetime.now()
-    fname = "tReport_"+str(now.strftime("%m%d%y%H%M%S"))+".csv"
-    file = open(fname_static, "a")
-    file.write("IMEI,SD Card,HW Ver,Firm Ver,Air Temp,Air Pressure,AIr Humidity,Lead Wetness,Rain,Wind Die,Wind Speed,Soil Temp,P Soil Mois,S Soil Mois,Light Inten, Solar Radi,Remarks\n")
-    file.close()
+    if fname_static in os.listdir():
+        print("File Already Exist!!")
+    else:
+        file = open(fname_static, "a")
+        file.write("DateTime,IMEI,SD Card,HW Ver,Firm Ver,Air Temp,Air Pressure,AIr Humidity,Lead Wetness,Rain,Wind Die,Wind Speed,Soil Temp,P Soil Mois,S Soil Mois,Light Inten, Solar Radi,Remarks\n")
+        file.close()
 except:
     print("File in not created!!")
+
+
+def DateTime():
+    now = datetime.now()
+    now = str(now.strftime("%d/%m%y %H:%M:%S"))
+    return now
 
 ts_led = 21
 sd_led = 20
@@ -86,8 +94,8 @@ setP_rd = 5
 
 def csvWrite(imei, hw_ver, firm_ver, air_temp, air_p, air_hum, lw, rain, wDir, wSpeed, soil_temp, psm, ssm, light_int, s_radi):
     try:
-        file = open(fname, "a")
-        payload = str(imei)+","+"OK,"+str(hw_ver)+","+str(firm_ver)+","+str(air_temp)+","+str(air_p)+","+str(air_hum)+","+str(lw)+","+str(rain)+","+str(wDir)+","+str(wSpeed)+","+str(soil_temp)+","+str(psm)+","+str(ssm)+","+str(light_int)+","+str(solar_radi)+",PASS\n"
+        file = open(fname_static, "a")
+        payload = str(DateTime())+","+str(imei)+","+"OK,"+str(hw_ver)+","+str(firm_ver)+","+str(air_temp)+","+str(air_p)+","+str(air_hum)+","+str(lw)+","+str(rain)+","+str(wDir)+","+str(wSpeed)+","+str(soil_temp)+","+str(psm)+","+str(ssm)+","+str(light_int)+","+str(solar_radi)+",PASS"
         file.write(payload+"\n")
         print("File Write Successful")
         file.close()
@@ -249,6 +257,7 @@ def gpioclean():
     gpio.output(lux_led, gpio.LOW)
     gpio.output(pass_led, gpio.LOW)
     gpio.output(ip_start, gpio.HIGH)
+    gpio.output(pass_led, gpio.HIGH)
 
 #this function should enable when using only in the raspberry Pi
 #optionCheck()
@@ -258,18 +267,17 @@ gpioclean()
 while True:
     print("Press Start Button.. \nButton State: ", gpio.input(start_button),"\nReset Button: ", gpio.input(reset_button))
     time.sleep(1)
+    ser.close()
     if gpio.input(start_button)==0:
         print("***********************************")
         print("Process Started!!")
         print("***********************************")
         temp =0
+        ser.open()
+        time.sleep(2)
         gpio.output(ip_start, gpio.LOW)
+        gpio.output(pass_led, gpio.LOW)
         while temp==0:
-            if gpio.input(reset_button)==0:
-                print("\n***********************************")
-                print("Process Stoped")
-                print("***********************************")
-                temp = 1
             cc = ser.readline()
             cc = cc.rstrip('\r\n').lstrip() #remove r' (raw string)
            # cc = str(cc, 'utf-8') #remove b' (byte string to string)
@@ -307,7 +315,7 @@ while True:
                 if(cc[0] == '{'): #JSON fromat starts from {
                     tempJson = json.loads(cc)
                     imei = tempJson.get("Z1")
-                    imei = str(imei.encode("utf-8"))
+                    imeiF = str(imei.encode("utf-8"))
                     hw_ver = float(tempJson.get("Z4"))
                     firm_ver = float(tempJson.get("Z8"))
                     air_temp = float(tempJson["Z5"]["A"])
@@ -325,7 +333,7 @@ while True:
                     solar_radi = tempJson["Z5"]["P"]
                     #print("IMEI number: ", tempJson.get("Z1"))
                     print("***********************************")
-                    print("IMEI: ", imei)
+                    print("IMEI: ", imeiF)
                     print("Hardware Version: ", hw_ver)
                     print("firmware Version: ", firm_ver)
                     print("Air Temperature: ", air_temp)
@@ -341,12 +349,18 @@ while True:
                     print("Light Intensity: ", light_int)
                     print("Solar Radiation: ", solar_radi)
                     print("***********************************")
-                    check(imei, hw_ver, firm_ver, air_temp, air_pressure, air_humidity, leaf_wetness,
+                    check(imeiF, hw_ver, firm_ver, air_temp, air_pressure, air_humidity, leaf_wetness,
                     rain, wind_dir, wind_speed, soil_temp, p_soil_mois, s_soil_mois, light_int, solar_radi)
 
-                    csvWrite(imei, hw_ver, firm_ver, air_temp, air_pressure, air_humidity, leaf_wetness,
+                    csvWrite(imeiF, hw_ver, firm_ver, air_temp, air_pressure, air_humidity, leaf_wetness,
                     rain, wind_dir, wind_speed, soil_temp, p_soil_mois, s_soil_mois, light_int, solar_radi)
-
+                    
+            if gpio.input(reset_button)==0:
+                print("\n***********************************")
+                print("Process Stoped")
+                print("***********************************")
+                ser.close()
+                temp = 1
         gpio.output(ip_start, gpio.HIGH)
         while gpio.input(reset_button)==1:
             time.sleep(1)
