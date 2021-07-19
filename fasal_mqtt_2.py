@@ -13,6 +13,8 @@ gStart = 0
 gReset = 0
 
 # The callback for when the client connects to the broker
+
+
 def on_connect(client, userdata, flags, rc):
     # Print result of connection attempt
     print("Connected with result code {0}".format(str(rc)))
@@ -35,7 +37,7 @@ client = paho.Client("client-001")
 client.on_message = on_message
 client.connect(broker)
 client.loop_start()
-client.publish("test","check1")
+client.publish("test", "check1")
 time.sleep(4)
 
 
@@ -60,6 +62,7 @@ def DateTime():
     now = datetime.now()
     now = str(now.strftime("%d/%m%y %H:%M:%S"))
     return now
+
 
 ts_led = 21
 sd_led = 20
@@ -150,12 +153,11 @@ def setPointPub():
     payloadPub(str("sp_rd", str(setP_rd)))
 
 
-
-
 def csvWrite(imei, hw_ver, firm_ver, air_temp, air_p, air_hum, lw, rain, wDir, wSpeed, soil_temp, psm, ssm, light_int, s_radi):
     try:
         file = open(fname_static, "a")
-        payload = str(DateTime())+","+str(imei)+","+"OK,"+str(hw_ver)+","+str(firm_ver)+","+str(air_temp)+","+str(air_p)+","+str(air_hum)+","+str(lw)+","+str(rain)+","+str(wDir)+","+str(wSpeed)+","+str(soil_temp)+","+str(psm)+","+str(ssm)+","+str(light_int)+","+str(solar_radi)+",PASS"
+        payload = str(DateTime())+","+str(imei)+","+"OK,"+str(hw_ver)+","+str(firm_ver)+","+str(air_temp)+","+str(air_p)+","+str(air_hum)+","+str(
+            lw)+","+str(rain)+","+str(wDir)+","+str(wSpeed)+","+str(soil_temp)+","+str(psm)+","+str(ssm)+","+str(light_int)+","+str(solar_radi)+",PASS"
         file.write(payload+"\n")
         print("File Write Successful")
         file.close()
@@ -163,110 +165,112 @@ def csvWrite(imei, hw_ver, firm_ver, air_temp, air_p, air_hum, lw, rain, wDir, w
         print("File Write Error")
         print(err)
 #Fuction for sensor value test and indication
+
+
 def check(imei, hw_ver, firm_ver, air_temp, air_p, air_humidity, leaf_wetness, rain, wind_dir, wind_speed, soil_temp, p_soil_mois, s_soil_mois, light_inten, solar_radi):
     print("***********************************")
-    if(len(imei)==15):
+    if(len(imei) == 15):
         print("IMEI Done")
         gpio.output(imei_led, gpio.HIGH)
-        payloadPub("imei",str(imei))
+        payloadPub("imei", str(imei))
     else:
         print("IMEI Failed")
         gpio.output(imei_led, gpio.LOW)
-        payloadPub("imei",str("IMEI Failed"))
+        payloadPub("imei", str("IMEI Failed"))
 
-    if(hw_ver==setP_hw):
+    if(hw_ver == setP_hw):
         print("Hardware Version Done")
-        payloadPub("Hardware Version",str(hw_ver))
+        payloadPub("Hardware Version", str(hw_ver))
     else:
         print("Hardware Version Failed")
-        payloadPub("Hardware Version",str(hw_ver)+": Version Failed")
+        payloadPub("Hardware Version", str(hw_ver)+": Version Failed")
 
-    if(firm_ver==setP_fw):
+    if(firm_ver == setP_fw):
         print("Firmware Version Done")
-        payloadPub("Firmware Version",str(firm_ver))
+        payloadPub("Firmware Version", str(firm_ver))
     else:
         print("Firmware Version Failed")
-        payloadPub("Firmware Version",str(firm_ver)+": Firmware Failed")
+        payloadPub("Firmware Version", str(firm_ver)+": Firmware Failed")
 
     if((air_temp > setP_at_min and air_temp < setP_ah_max) and (air_p > setP_ap_min and air_p < setP_ap_max) and (air_humidity > setP_ah_min and air_humidity < setP_ah_max)):
         print("BME Sensor Test Done")
         gpio.output(bme_led, gpio.HIGH)
-        payloadPub("at",str(air_temp))
-        payloadPub("ap",str(air_pressure))
-        payloadPub("ah",str(air_humidity))
+        payloadPub("at", str(air_temp))
+        payloadPub("ap", str(air_pressure))
+        payloadPub("ah", str(air_humidity))
     else:
         print("BME Sensor Test Failed")
         gpio.output(bme_led, gpio.LOW)
-        payloadPub("at",str(air_temp)+" : Failed")
-        payloadPub("ap",str(air_pressure)+" : Failed")
-        payloadPub("ah",str(air_humidity)+" : Failed")
+        payloadPub("at", str(air_temp)+" : Failed")
+        payloadPub("ap", str(air_pressure)+" : Failed")
+        payloadPub("ah", str(air_humidity)+" : Failed")
 
     if(leaf_wetness > setP_lw):
         print("Leaf Wetness Done")
         gpio.output(lw_led, gpio.HIGH)
-        payloadPub("lw",str(leaf_wetness))
+        payloadPub("lw", str(leaf_wetness))
     else:
         print("Leaf Wetness Failed")
         gpio.output(lw_led, gpio.LOW)
-        payloadPub("lw",str(leaf_wetness)+" : Failed")
+        payloadPub("lw", str(leaf_wetness)+" : Failed")
 
-    if((rain > setP_rain) and (len(wind_dir)>0)):
+    if((rain > setP_rain) and (len(wind_dir) > 0)):
         print("Rain Sensor and Wind Direction Test Done")
         gpio.output(dr_led, gpio.HIGH)
-        payloadPub("rc",str(rain))
-        payloadPub("wd",str(wind_dir))
+        payloadPub("rc", str(rain))
+        payloadPub("wd", str(wind_dir))
     else:
         print("Rain Sensor and Wind Direction Test Failed")
         gpio.output(dr_led, gpio.LOW)
-        payloadPub("rc",str(rain)+" : Failed")
-        payloadPub("wd",str(wind_dir)+" : Failed")
+        payloadPub("rc", str(rain)+" : Failed")
+        payloadPub("wd", str(wind_dir)+" : Failed")
 
     if(wind_speed > setP_ws):
         print("Wind Speed Done")
         gpio.output(ws_led, gpio.HIGH)
-        payloadPub("ws",str(wind_speed))
+        payloadPub("ws", str(wind_speed))
     else:
         print("Wind Speed Failed")
         gpio.output(ws_led, gpio.LOW)
-        payloadPub("ws",str(wind_speed)+" : Failed")
+        payloadPub("ws", str(wind_speed)+" : Failed")
 
     if(soil_temp > setP_st_min and soil_temp < setP_st_max):
         print("Soil Temperature Test Done")
         gpio.output(st_led, gpio.HIGH)
-        payloadPub("st",str(soil_temp))
+        payloadPub("st", str(soil_temp))
     else:
         print("Soil Temperature Test Failed")
         gpio.output(st_led, gpio.LOW)
-        payloadPub("st",str(soil_temp)+" : Failed")
+        payloadPub("st", str(soil_temp)+" : Failed")
 
     if(p_soil_mois > setP_psm_min and p_soil_mois < setP_psm_max):
         print("Primery Soil Mositure Sensor Test Done")
         gpio.output(psm_led, gpio.HIGH)
-        payloadPub("psm",str(p_soil_mois))
+        payloadPub("psm", str(p_soil_mois))
     else:
         print("Primery Soil Mositure Sensor Test Failed")
         gpio.output(psm_led, gpio.LOW)
-        payloadPub("psm",str(p_soil_mois)+" : Failed")
+        payloadPub("psm", str(p_soil_mois)+" : Failed")
 
     if(s_soil_mois > setP_ssm_min and s_soil_mois < setP_ssm_max):
         print("Secondary Soil Mositure Sensor Test Done")
         gpio.output(ssm_led, gpio.HIGH)
-        payloadPub("ssm",str(s_soil_mois))
+        payloadPub("ssm", str(s_soil_mois))
     else:
         print("Secondary Soil Mositure Sensor Test Failed")
         gpio.output(ssm_led, gpio.LOW)
-        payloadPub("ssm",str(s_soil_mois)+" : Failed")
+        payloadPub("ssm", str(s_soil_mois)+" : Failed")
 
     if((light_inten > setP_li) and (solar_radi > setP_rd)):
         print("Lux Sensor Test Done")
         gpio.output(lux_led, gpio.HIGH)
-        payloadPub("li",str(light_inten))
-        payloadPub("sr",str(solar_radi))
+        payloadPub("li", str(light_inten))
+        payloadPub("sr", str(solar_radi))
     else:
         print("Lux Sensor Test Failed")
         gpio.output(lux_led, gpio.LOW)
-        payloadPub("li",str(light_inten)+" : Failed")
-        payloadPub("sr",str(solar_radi)+" : Failed")
+        payloadPub("li", str(light_inten)+" : Failed")
+        payloadPub("sr", str(solar_radi)+" : Failed")
 
     print("***********************************")
 
@@ -296,23 +300,25 @@ def setPointView():
 
 
 def mqttValueClear():
-    client.publish("ds","")
-    client.publish("sd","")
-    client.publish("imei","")
-    client.publish("ssm","")
-    client.publish("psm","")
-    client.publish("at","")
-    client.publish("ap","")
-    client.publish("ah","")
-    client.publish("lw","")
-    client.publish("ws","")
-    client.publish("rc","")
-    client.publish("wd","")
-    client.publish("st","")
-    client.publish("li","")
-    client.publish("sr","")
+    client.publish("ds", "")
+    client.publish("sd", "")
+    client.publish("imei", "")
+    client.publish("ssm", "")
+    client.publish("psm", "")
+    client.publish("at", "")
+    client.publish("ap", "")
+    client.publish("ah", "")
+    client.publish("lw", "")
+    client.publish("ws", "")
+    client.publish("rc", "")
+    client.publish("wd", "")
+    client.publish("st", "")
+    client.publish("li", "")
+    client.publish("sr", "")
 
 #option for change the setpoint and check the setpoints --> This should happen before the main loop
+
+
 def optionCheck():
     value = int(input(
         "1. For check the default values\n2. For change the default values\nPlease Enter the option:"))
@@ -335,20 +341,24 @@ def optionCheck():
         setP_st_max = int(input("Enter Soil Temperature max Setpoint: "))
         setP_psm_min = int(input("Enter Primery Soil Moisture Min Setpoint: "))
         setP_psm_max = int(input("Enter Primery Soil Moisture Max Setpoint: "))
-        setP_ssm_min = int(input("Enter Secondry Soil Mositure Min Setpoint: "))
-        setP_ssm_max = int(input("Enter Secodary Soil Mositure Max Setpoint: "))
+        setP_ssm_min = int(
+            input("Enter Secondry Soil Mositure Min Setpoint: "))
+        setP_ssm_max = int(
+            input("Enter Secodary Soil Mositure Max Setpoint: "))
         setP_li = int(input("Enter Light Intersity Setpoint: "))
         setP_rd = int(input("Enter Solar Radation Level Setpoint: "))
         print("***********************************")
         print("")
 
-    value = int(input("1. Home Menu\n2. Exit and Enter to the main Loop\nEnter the Option: "))
+    value = int(
+        input("1. Home Menu\n2. Exit and Enter to the main Loop\nEnter the Option: "))
     if value == 1:
-        optionCheck() #recursion funtion
+        optionCheck()  # recursion funtion
     elif value == 2:
         print("Entering into the main loop")
     else:
         print("Entering into the main loop")
+
 
 def gpioclean():
     gpio.output(ts_led, gpio.LOW)
@@ -369,37 +379,48 @@ def gpioclean():
 #this function should enable when using only in the raspberry Pi
 #optionCheck()
 
+
 def payloadPub(topic, payload):
     pubCheck = client.publish(topic, payload)
-    while pubCheck[0]!=0:
+    while pubCheck[0] != 0:
         pubCheck = client.publish(topic, payload)
         time.sleep(0.1)
+
 
 gpioclean()
 
 setPointPub()
 #main loop starts from here
 while True:
-    print("Press Start Button.. \nButton State: ", gpio.input(start_button),"\nReset Button: ", gpio.input(reset_button))
+    print("Press Start Button.. \nButton State: ", gpio.input(
+        start_button), "\nReset Button: ", gpio.input(reset_button))
     time.sleep(1)
     ser.close()
     mqttValueClear()
-    if gpio.input(start_button)==0:
+    if ((gpio.input(start_button) == 0) or (gStart == 1)):
+        gStart = 0
         print("***********************************")
         print("Process Started!!")
         print("***********************************")
-        temp =0
+        temp = 0
         ser.open()
         gpio.output(ip_start, gpio.LOW)
         gpio.output(pass_led, gpio.LOW)
-        while temp==0:
-            time.sleep(0.05)
+        while temp == 0:
+            if ((gpio.input(reset_button) == 0) or (gReset == 1)):
+                gReset = 0
+                print("\n***********************************")
+                print("Process Stoped")
+                print("***********************************")
+                ser.close()
+                temp = 1
+                break
             cc = ser.readline()
-            cc = cc.rstrip('\r\n').lstrip() #remove r' (raw string)
+            cc = cc.rstrip('\r\n').lstrip()  # remove r' (raw string)
 
            # cc = str(cc, 'utf-8') #remove b' (byte string to string)
         #    print(cc)
-            if(len(cc) > 0):  #len should be greater than 0
+            if(len(cc) > 0):  # len should be greater than 0
                 #print(".")
                 payloadPub("serial", str(cc))
                 print(cc)
@@ -428,14 +449,13 @@ while True:
                     gpio.output(sd_led, gpio.HIGH)
                     payloadPub("sd", "OK")
 
-
                 if(cc == "mcu sleep"):
                     print("\n***********************************")
                     print("Sleep Mode")
                     print("***********************************")
-                    temp=1
+                    temp = 1
 
-                if(cc[0] == '{'): #JSON fromat starts from {
+                if(cc[0] == '{'):  # JSON fromat starts from {
                     tempJson = json.loads(cc)
                     imei = tempJson.get("Z1")
                     imeiF = str(imei.encode("utf-8"))
@@ -473,22 +493,19 @@ while True:
                     print("Solar Radiation: ", solar_radi)
                     print("***********************************")
                     check(imeiF, hw_ver, firm_ver, air_temp, air_pressure, air_humidity, leaf_wetness,
-                    rain, wind_dir, wind_speed, soil_temp, p_soil_mois, s_soil_mois, light_int, solar_radi)
+                          rain, wind_dir, wind_speed, soil_temp, p_soil_mois, s_soil_mois, light_int, solar_radi)
 
                     csvWrite(imeiF, hw_ver, firm_ver, air_temp, air_pressure, air_humidity, leaf_wetness,
-                    rain, wind_dir, wind_speed, soil_temp, p_soil_mois, s_soil_mois, light_int, solar_radi)
+                             rain, wind_dir, wind_speed, soil_temp, p_soil_mois, s_soil_mois, light_int, solar_radi)
 
-            if gpio.input(reset_button)==0:
+            if gpio.input(reset_button) == 0:
                 print("\n***********************************")
                 print("Process Stoped")
                 print("***********************************")
                 ser.close()
                 temp = 1
         gpio.output(ip_start, gpio.HIGH)
-        while gpio.input(reset_button)==1:
+        while gpio.input(reset_button) == 1:
             #print(gpio.input(reset_button))
             time.sleep(1)
         gpioclean()
-
-
-
