@@ -111,7 +111,27 @@ setP_rd = 5
 
 
 def setPointPub():
-    	
+    payloadPub(str("sp_hw", str(setP_hw)))
+    payloadPub(str("sp_fw", str(setP_fw)))
+    payloadPub(str("sp_at_min", str(setP_at_min)))
+    payloadPub(str("sp_at_max", str(setP_at_max)))
+    payloadPub(str("sp_ap_min", str(setP_ap_min)))
+    payloadPub(str("sp_ap_max", str(setP_ap_max)))
+    payloadPub(str("sp_ah_min", str(setP_ah_min)))
+    payloadPub(str("sp_ah_max", str(setP_ah_max)))
+    payloadPub(str("sp_lw", str(setP_lw)))
+    payloadPub(str("sp_rain", str(setP_rain)))
+    payloadPub(str("sp_ws", str(setP_ws)))
+    payloadPub(str("sp_st_min", str(setP_st_min)))
+    payloadPub(str("sp_st_max", str(setP_st_max)))
+    payloadPub(str("sp_psm_min", str(setP_psm_min)))
+    payloadPub(str("sp_psm_max", str(setP_psm_max)))
+    payloadPub(str("sp_ssm_min", str(setP_ssm_min)))
+    payloadPub(str("sp_ssm_max", str(setP_ssm_max)))
+    payloadPub(str("sp_li", str(setP_li)))
+    payloadPub(str("sp_rd", str(setP_rd)))
+
+
 
 
 def csvWrite(imei, hw_ver, firm_ver, air_temp, air_p, air_hum, lw, rain, wDir, wSpeed, soil_temp, psm, ssm, light_int, s_radi):
@@ -166,7 +186,7 @@ def check(imei, hw_ver, firm_ver, air_temp, air_p, air_humidity, leaf_wetness, r
     if(leaf_wetness > setP_lw):
         print("Leaf Wetness Done")
         gpio.output(lw_led, gpio.HIGH)
-        payloadPub("lw",str(leaf_wetness))      
+        payloadPub("lw",str(leaf_wetness))
     else:
         print("Leaf Wetness Failed")
         gpio.output(lw_led, gpio.LOW)
@@ -338,6 +358,8 @@ def payloadPub(topic, payload):
         time.sleep(0.1)
 
 gpioclean()
+
+setPointPub()
 #main loop starts from here
 while True:
     print("Press Start Button.. \nButton State: ", gpio.input(start_button),"\nReset Button: ", gpio.input(reset_button))
@@ -356,7 +378,7 @@ while True:
             time.sleep(0.05)
             cc = ser.readline()
             cc = cc.rstrip('\r\n').lstrip() #remove r' (raw string)
-            
+
            # cc = str(cc, 'utf-8') #remove b' (byte string to string)
         #    print(cc)
             if(len(cc) > 0):  #len should be greater than 0
@@ -387,7 +409,7 @@ while True:
                     print("SD Card Detected Process Done")
                     gpio.output(sd_led, gpio.HIGH)
                     payloadPub("sd", "OK")
-                   
+
 
                 if(cc == "mcu sleep"):
                     print("\n***********************************")
@@ -437,7 +459,7 @@ while True:
 
                     csvWrite(imeiF, hw_ver, firm_ver, air_temp, air_pressure, air_humidity, leaf_wetness,
                     rain, wind_dir, wind_speed, soil_temp, p_soil_mois, s_soil_mois, light_int, solar_radi)
-                    
+
             if gpio.input(reset_button)==0:
                 print("\n***********************************")
                 print("Process Stoped")
@@ -451,4 +473,4 @@ while True:
         gpioclean()
 
 
-    
+
