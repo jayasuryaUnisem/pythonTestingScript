@@ -4,8 +4,22 @@ import time
 import json
 import os
 from datetime import datetime
+import paho.mqtt.client as paho
 
 fname_static = "tReportStatic.csv"
+broker = "192.168.1.15"
+
+def on_message(client, userdata, message):
+    time.sleep(1)
+    print("Payload: ", str(message.payload.decode("utf-8")))
+
+client = paho.Client("client-001")
+client.on_message = on_message
+client.connect(broker)
+client.loop_start()
+client.publish("test","check1")
+time.sleep(4)
+
 
 gpio.cleanup()
 try:
@@ -77,7 +91,7 @@ except:
 #Defined or Default Setpoint for compare the sensor values
 setP_hw = 3.0
 setP_fw = 2.0
-setP_at_min = 23.0
+setP_at_min = 18.0
 setP_at_max = 30.0
 setP_ap_min = 80000.0
 setP_ap_max = 100000.0
@@ -96,6 +110,9 @@ setP_li = 2
 setP_rd = 5
 
 
+def setPointPub():
+    	
+
 
 def csvWrite(imei, hw_ver, firm_ver, air_temp, air_p, air_hum, lw, rain, wDir, wSpeed, soil_temp, psm, ssm, light_int, s_radi):
     try:
@@ -113,75 +130,105 @@ def check(imei, hw_ver, firm_ver, air_temp, air_p, air_humidity, leaf_wetness, r
     if(len(imei)==15):
         print("IMEI Done")
         gpio.output(imei_led, gpio.HIGH)
+        payloadPub("imei",str(imei))
     else:
         print("IMEI Failed")
         gpio.output(imei_led, gpio.LOW)
+        payloadPub("imei",str("IMEI Failed"))
 
     if(hw_ver==setP_hw):
         print("Hardware Version Done")
+        payloadPub("Hardware Version",str(hw_ver))
     else:
         print("Hardware Version Failed")
+        payloadPub("Hardware Version",str(hw_ver)+": Version Failed")
 
     if(firm_ver==setP_fw):
         print("Firmware Version Done")
+        payloadPub("Firmware Version",str(firm_ver))
     else:
         print("Firmware Version Failed")
+        payloadPub("Firmware Version",str(firm_ver)+": Firmware Failed")
 
     if((air_temp > setP_at_min and air_temp < setP_ah_max) and (air_p > setP_ap_min and air_p < setP_ap_max) and (air_humidity > setP_ah_min and air_humidity < setP_ah_max)):
         print("BME Sensor Test Done")
         gpio.output(bme_led, gpio.HIGH)
+        payloadPub("at",str(air_temp))
+        payloadPub("ap",str(air_pressure))
+        payloadPub("ah",str(air_humidity))
     else:
         print("BME Sensor Test Failed")
         gpio.output(bme_led, gpio.LOW)
+        payloadPub("at",str(air_temp)+" : Failed")
+        payloadPub("ap",str(air_pressure)+" : Failed")
+        payloadPub("ah",str(air_humidity)+" : Failed")
 
     if(leaf_wetness > setP_lw):
         print("Leaf Wetness Done")
         gpio.output(lw_led, gpio.HIGH)
+        payloadPub("lw",str(leaf_wetness))      
     else:
         print("Leaf Wetness Failed")
         gpio.output(lw_led, gpio.LOW)
+        payloadPub("lw",str(leaf_wetness)+" : Failed")
 
     if((rain > setP_rain) and (len(wind_dir)>0)):
         print("Rain Sensor and Wind Direction Test Done")
         gpio.output(dr_led, gpio.HIGH)
+        payloadPub("rc",str(rain))
+        payloadPub("wd",str(wind_dir))
     else:
         print("Rain Sensor and Wind Direction Test Failed")
         gpio.output(dr_led, gpio.LOW)
+        payloadPub("rc",str(rain)+" : Failed")
+        payloadPub("wd",str(wind_dir)+" : Failed")
 
     if(wind_speed > setP_ws):
         print("Wind Speed Done")
         gpio.output(ws_led, gpio.HIGH)
+        payloadPub("ws",str(wind_speed))
     else:
         print("Wind Speed Failed")
         gpio.output(ws_led, gpio.LOW)
+        payloadPub("ws",str(wind_speed)+" : Failed")
 
     if(soil_temp > setP_st_min and soil_temp < setP_st_max):
         print("Soil Temperature Test Done")
         gpio.output(st_led, gpio.HIGH)
+        payloadPub("st",str(soil_temp))
     else:
         print("Soil Temperature Test Failed")
         gpio.output(st_led, gpio.LOW)
+        payloadPub("st",str(soil_temp)+" : Failed")
 
     if(p_soil_mois > setP_psm_min and p_soil_mois < setP_psm_max):
         print("Primery Soil Mositure Sensor Test Done")
         gpio.output(psm_led, gpio.HIGH)
+        payloadPub("psm",str(p_soil_mois))
     else:
         print("Primery Soil Mositure Sensor Test Failed")
         gpio.output(psm_led, gpio.LOW)
+        payloadPub("psm",str(p_soil_mois)+" : Failed")
 
     if(s_soil_mois > setP_ssm_min and s_soil_mois < setP_ssm_max):
         print("Secondary Soil Mositure Sensor Test Done")
         gpio.output(ssm_led, gpio.HIGH)
+        payloadPub("ssm",str(s_soil_mois))
     else:
         print("Secondary Soil Mositure Sensor Test Failed")
         gpio.output(ssm_led, gpio.LOW)
+        payloadPub("ssm",str(s_soil_mois)+" : Failed")
 
     if((light_inten > setP_li) and (solar_radi > setP_rd)):
         print("Lux Sensor Test Done")
         gpio.output(lux_led, gpio.HIGH)
+        payloadPub("li",str(light_inten))
+        payloadPub("sr",str(solar_radi))
     else:
         print("Lux Sensor Test Failed")
         gpio.output(lux_led, gpio.LOW)
+        payloadPub("li",str(light_inten)+" : Failed")
+        payloadPub("sr",str(solar_radi)+" : Failed")
 
     print("***********************************")
 
@@ -209,6 +256,23 @@ def setPointView():
     print("Solar Radiation: ", setP_rd)
     print("***********************************")
 
+
+def mqttValueClear():
+    client.publish("ds","")
+    client.publish("sd","")
+    client.publish("imei","")
+    client.publish("ssm","")
+    client.publish("psm","")
+    client.publish("at","")
+    client.publish("ap","")
+    client.publish("ah","")
+    client.publish("lw","")
+    client.publish("ws","")
+    client.publish("rc","")
+    client.publish("wd","")
+    client.publish("st","")
+    client.publish("li","")
+    client.publish("sr","")
 
 #option for change the setpoint and check the setpoints --> This should happen before the main loop
 def optionCheck():
@@ -267,32 +331,43 @@ def gpioclean():
 #this function should enable when using only in the raspberry Pi
 #optionCheck()
 
+def payloadPub(topic, payload):
+    pubCheck = client.publish(topic, payload)
+    while pubCheck[0]!=0:
+        pubCheck = client.publish(topic, payload)
+        time.sleep(0.1)
+
 gpioclean()
 #main loop starts from here
 while True:
     print("Press Start Button.. \nButton State: ", gpio.input(start_button),"\nReset Button: ", gpio.input(reset_button))
     time.sleep(1)
     ser.close()
+    mqttValueClear()
     if gpio.input(start_button)==0:
         print("***********************************")
         print("Process Started!!")
         print("***********************************")
         temp =0
         ser.open()
-        time.sleep(2)
         gpio.output(ip_start, gpio.LOW)
         gpio.output(pass_led, gpio.LOW)
         while temp==0:
+            time.sleep(0.05)
             cc = ser.readline()
             cc = cc.rstrip('\r\n').lstrip() #remove r' (raw string)
+            
            # cc = str(cc, 'utf-8') #remove b' (byte string to string)
         #    print(cc)
             if(len(cc) > 0):  #len should be greater than 0
                 #print(".")
+                payloadPub("serial", str(cc))
                 print(cc)
+                #time.sleep(0.5)
                 if(cc == "Device Powered ON"):
+                    print("Device Truned ON Successfuly")
                     gpio.output(ts_led, gpio.HIGH)
-
+                    payloadPub("ds", "OK")
                 if(cc == "Lux Available = 1"):
                     print("\n***********************************")
                     print("Lux Sensor Connected")
@@ -309,7 +384,10 @@ while True:
                     print("***********************************")
 
                 if(cc == "<<< MSG: SD card initialization Successful! >>>"):
+                    print("SD Card Detected Process Done")
                     gpio.output(sd_led, gpio.HIGH)
+                    payloadPub("sd", "OK")
+                   
 
                 if(cc == "mcu sleep"):
                     print("\n***********************************")
