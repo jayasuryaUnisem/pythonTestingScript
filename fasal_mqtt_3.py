@@ -73,7 +73,7 @@ except Exception as err:
 
 def DateTime():
     now = datetime.now()
-    now = str(now.strftime("%d/%m%y %H:%M:%S"))
+    now = str(now.strftime("%d/%m/%y %H:%M:%S"))
     return now
 
 
@@ -521,51 +521,57 @@ while True:
                     print("\n***********************************")
                     print("Sleep Mode")
                     print("***********************************")
+                    payloadPub("lastTestTime", str(DateTime()))
                     temp = 1
+                try:
+                    if(cc[0] == '{'):  # JSON fromat starts from {
+                        tempJson = json.loads(cc)
+                        imei = tempJson.get("Z1")
+                        imeiF = str(imei.encode("utf-8"))
+                        hw_ver = float(tempJson.get("Z4"))
+                        firm_ver = float(tempJson.get("Z8"))
+                        air_temp = float(tempJson["Z5"]["A"])
+                        air_pressure = float(tempJson["Z5"]["B"])
+                        air_humidity = float(tempJson["Z5"]["C"])
+                        leaf_wetness = int(tempJson["Z5"]["D"])
+                        rain = float(tempJson["Z5"]["G"])
+                        wind_dir = tempJson["Z5"]["F"]
+                        wind_dir = str(wind_dir.encode("utf-8"))
+                        wind_speed = float(tempJson["Z5"]["E"])
+                        soil_temp = float(tempJson["Z5"]["H"])
+                        p_soil_mois = int(tempJson["Z5"]["I"])
+                        s_soil_mois = int(tempJson["Z5"]["J"])
+                        light_int = tempJson["Z5"]["O"]
+                        solar_radi = tempJson["Z5"]["P"]
+                        #print("IMEI number: ", tempJson.get("Z1"))
+                        print("***********************************")
+                        print("IMEI: ", imeiF)
+                        print("Hardware Version: ", hw_ver)
+                        print("firmware Version: ", firm_ver)
+                        print("Air Temperature: ", air_temp)
+                        print("Air Pressure: ", air_pressure)
+                        print("Air Humidity: ", air_humidity)
+                        print("Leaf Wetness: ", leaf_wetness)
+                        print("Rain in mm: ", rain)
+                        print("Wind Direction: ", wind_dir)
+                        print("Wind Speed: ", wind_speed)
+                        print("Soil Temperature: ", soil_temp)
+                        print("Primary Soil Mositure: ", p_soil_mois)
+                        print("Secondary Soil Moisture: ", s_soil_mois)
+                        print("Light Intensity: ", light_int)
+                        print("Solar Radiation: ", solar_radi)
+                        print("***********************************")
+                        check(imeiF, hw_ver, firm_ver, air_temp, air_pressure, air_humidity, leaf_wetness,
+                            rain, wind_dir, wind_speed, soil_temp, p_soil_mois, s_soil_mois, light_int, solar_radi)
+                        if(checkCsv==1):
+                            checkCsv = 0
+                            csvWrite(imeiF, hw_ver, firm_ver, air_temp, air_pressure, air_humidity, leaf_wetness,
+                                    rain, wind_dir, wind_speed, soil_temp, p_soil_mois, s_soil_mois, light_int, solar_radi)
+                except Exception as err:
+                    print("Error: ", err)
+                    print("Press Emergency Reset Button")
+                    payloadPub("serial", "Err"+str(err)+", Press Emergency Reset Button")
 
-                if(cc[0] == '{'):  # JSON fromat starts from {
-                    tempJson = json.loads(cc)
-                    imei = tempJson.get("Z1")
-                    imeiF = str(imei.encode("utf-8"))
-                    hw_ver = float(tempJson.get("Z4"))
-                    firm_ver = float(tempJson.get("Z8"))
-                    air_temp = float(tempJson["Z5"]["A"])
-                    air_pressure = float(tempJson["Z5"]["B"])
-                    air_humidity = float(tempJson["Z5"]["C"])
-                    leaf_wetness = int(tempJson["Z5"]["D"])
-                    rain = float(tempJson["Z5"]["G"])
-                    wind_dir = tempJson["Z5"]["F"]
-                    wind_dir = str(wind_dir.encode("utf-8"))
-                    wind_speed = float(tempJson["Z5"]["E"])
-                    soil_temp = float(tempJson["Z5"]["H"])
-                    p_soil_mois = int(tempJson["Z5"]["I"])
-                    s_soil_mois = int(tempJson["Z5"]["J"])
-                    light_int = tempJson["Z5"]["O"]
-                    solar_radi = tempJson["Z5"]["P"]
-                    #print("IMEI number: ", tempJson.get("Z1"))
-                    print("***********************************")
-                    print("IMEI: ", imeiF)
-                    print("Hardware Version: ", hw_ver)
-                    print("firmware Version: ", firm_ver)
-                    print("Air Temperature: ", air_temp)
-                    print("Air Pressure: ", air_pressure)
-                    print("Air Humidity: ", air_humidity)
-                    print("Leaf Wetness: ", leaf_wetness)
-                    print("Rain in mm: ", rain)
-                    print("Wind Direction: ", wind_dir)
-                    print("Wind Speed: ", wind_speed)
-                    print("Soil Temperature: ", soil_temp)
-                    print("Primary Soil Mositure: ", p_soil_mois)
-                    print("Secondary Soil Moisture: ", s_soil_mois)
-                    print("Light Intensity: ", light_int)
-                    print("Solar Radiation: ", solar_radi)
-                    print("***********************************")
-                    check(imeiF, hw_ver, firm_ver, air_temp, air_pressure, air_humidity, leaf_wetness,
-                          rain, wind_dir, wind_speed, soil_temp, p_soil_mois, s_soil_mois, light_int, solar_radi)
-                    if(checkCsv==1):
-                        checkCsv = 0
-                        csvWrite(imeiF, hw_ver, firm_ver, air_temp, air_pressure, air_humidity, leaf_wetness,
-                                rain, wind_dir, wind_speed, soil_temp, p_soil_mois, s_soil_mois, light_int, solar_radi)
 
             if gpio.input(reset_button) == 0:
                 print("\n***********************************")
