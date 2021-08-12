@@ -11,13 +11,46 @@ import paho.mqtt.client as mqtt
 fname_static = "tReportStatic.csv"
 broker = "192.168.1.15"
 
+class usbStatus:
+    usb0 = 0
+    usb1 = 0
+    usb2 = 0
+    usb3 = 0
+
 class buttonState:
     gStart = 0
     gReset = 0
 
 bs = buttonState()
+usb = usbStatus()
 
 # The callback for when the client connects to the broker
+
+def usbConnectionChek():
+    try:
+        ser0 = serial.Serial("/dev/ttyUSB0", 115200)
+    except:
+        print("USB0 is not connected")
+        usb.usb0 = 1
+    
+    try:
+        ser1 = serial.Serial("/dev/ttyUSB1", 115200)
+    except:
+        print("USB1 is not connected")
+        usb.usb0 = 1
+    
+    try:
+        ser2 = serial.Serial("/dev/ttyUSB2", 115200)
+    except:
+        print("USB2 is not connected")
+        usb.usb0 = 1
+    
+    try:
+        ser3 = serial.Serial("/dev/ttyUSB3", 115200)
+    except:
+        print("USB3 is not connected")
+        usb.usb0 = 1
+
 
 def restart_program():
     """Restarts the current program.
@@ -77,49 +110,20 @@ def DateTime():
     return now
 
 
-ts_led = 21
-sd_led = 20
-imei_led = 16
-ssm_led = 12
-psm_led = 1
-bme_led = 7
-lw_led = 8
-ws_led = 25
-dr_led = 24
-st_led = 23
-lux_led = 19
 reset_button = 2
 start_button = 3
 ip_start = 6
-pass_led = 13
+
 
 
 gpio.setwarnings(False)
 gpio.setmode(gpio.BCM)
-gpio.setup(ts_led, gpio.OUT)
-gpio.setup(sd_led, gpio.OUT)
-gpio.setup(imei_led, gpio.OUT)
-gpio.setup(ssm_led, gpio.OUT)
-gpio.setup(psm_led, gpio.OUT)
-gpio.setup(bme_led, gpio.OUT)
-gpio.setup(lw_led, gpio.OUT)
-gpio.setup(ws_led, gpio.OUT)
-gpio.setup(dr_led, gpio.OUT)
-gpio.setup(st_led, gpio.OUT)
-gpio.setup(lux_led, gpio.OUT)
 gpio.setup(ip_start, gpio.OUT)
-gpio.setup(pass_led, gpio.OUT)
 gpio.setup(reset_button, gpio.IN, pull_up_down=gpio.PUD_UP)
 gpio.setup(start_button, gpio.IN, pull_up_down=gpio.PUD_UP)
 
 #Serial Communication configs
-try:
-    ser = serial.Serial("/dev/ttyUSB0", 115200)
-except:
-    gpio.cleanup()
-    while 1:
-        print("Serial Port Not connected !")
-        time.sleep(1)
+
 ###gpio.cleanup()
 
 #Defined or Default Setpoint for compare the sensor values
@@ -184,12 +188,10 @@ def check(imei, hw_ver, firm_ver, air_temp, air_p, air_humidity, leaf_wetness, r
     print("***********************************")
     if(len(imei) == 15):
         print("IMEI Done")
-        gpio.output(imei_led, gpio.HIGH)
         payloadPub("imei", str(imei))
         payloadPub("imeiCK", "OK")
     else:
         print("IMEI Failed")
-        gpio.output(imei_led, gpio.LOW)
         payloadPub("imei", str("IMEI Failed"))
         payloadPub("imeiCK", "ERR")
 
@@ -209,14 +211,12 @@ def check(imei, hw_ver, firm_ver, air_temp, air_p, air_humidity, leaf_wetness, r
 
     if((air_temp > setP_at_min and air_temp < setP_ah_max) and (air_p > setP_ap_min and air_p < setP_ap_max) and (air_humidity > setP_ah_min and air_humidity < setP_ah_max)):
         print("BME Sensor Test Done")
-        gpio.output(bme_led, gpio.HIGH)
         payloadPub("at", str(air_temp))
         payloadPub("ap", str(air_pressure))
         payloadPub("ah", str(air_humidity))
         payloadPub("bmeCK", "OK")
     else:
         print("BME Sensor Test Failed")
-        gpio.output(bme_led, gpio.LOW)
         payloadPub("at", str(air_temp)+" : Failed")
         payloadPub("ap", str(air_pressure)+" : Failed")
         payloadPub("ah", str(air_humidity)+" : Failed")
@@ -224,81 +224,67 @@ def check(imei, hw_ver, firm_ver, air_temp, air_p, air_humidity, leaf_wetness, r
 
     if(leaf_wetness > setP_lw):
         print("Leaf Wetness Done")
-        gpio.output(lw_led, gpio.HIGH)
         payloadPub("lw", str(leaf_wetness))
         payloadPub("lwCK", "OK")
     else:
         print("Leaf Wetness Failed")
-        gpio.output(lw_led, gpio.LOW)
         payloadPub("lw", str(leaf_wetness)+" : Failed")
         payloadPub("lwCK", "ERR")
 
     if((rain > setP_rain) and (len(wind_dir) > 0)):
         print("Rain Sensor and Wind Direction Test Done")
-        gpio.output(dr_led, gpio.HIGH)
         payloadPub("rc", str(rain))
         payloadPub("wd", str(wind_dir))
         payloadPub("drCK", "OK")
     else:
         print("Rain Sensor and Wind Direction Test Failed")
-        gpio.output(dr_led, gpio.LOW)
         payloadPub("rc", str(rain)+" : Failed")
         payloadPub("wd", str(wind_dir)+" : Failed")
         payloadPub("drCK", "ERR")
 
     if(wind_speed > setP_ws):
         print("Wind Speed Done")
-        gpio.output(ws_led, gpio.HIGH)
         payloadPub("ws", str(wind_speed))
         payloadPub("wsCK", "OK")
     else:
         print("Wind Speed Failed")
-        gpio.output(ws_led, gpio.LOW)
         payloadPub("ws", str(wind_speed)+" : Failed")
         payloadPub("wsCK", "ERR")
 
     if(soil_temp > setP_st_min and soil_temp < setP_st_max):
         print("Soil Temperature Test Done")
-        gpio.output(st_led, gpio.HIGH)
         payloadPub("st", str(soil_temp))
         payloadPub("stCK", "OK")
     else:
         print("Soil Temperature Test Failed")
-        gpio.output(st_led, gpio.LOW)
         payloadPub("st", str(soil_temp)+" : Failed")
         payloadPub("stCK", "ERR")
 
     if(p_soil_mois > setP_psm_min and p_soil_mois < setP_psm_max):
         print("Primery Soil Mositure Sensor Test Done")
-        gpio.output(psm_led, gpio.HIGH)
         payloadPub("psm", str(p_soil_mois))
         payloadPub("psmCK", "OK")
     else:
         print("Primery Soil Mositure Sensor Test Failed")
-        gpio.output(psm_led, gpio.LOW)
         payloadPub("psm", str(p_soil_mois)+" : Failed")
         payloadPub("psmCK", "ERR")
 
     if(s_soil_mois > setP_ssm_min and s_soil_mois < setP_ssm_max):
         print("Secondary Soil Mositure Sensor Test Done")
-        gpio.output(ssm_led, gpio.HIGH)
         payloadPub("ssm", str(s_soil_mois))
         payloadPub("ssmCK", "OK")
     else:
         print("Secondary Soil Mositure Sensor Test Failed")
-        gpio.output(ssm_led, gpio.LOW)
         payloadPub("ssm", str(s_soil_mois)+" : Failed")
         payloadPub("ssmCK", "ERR")
 
     if((light_inten > setP_li) and (solar_radi > setP_rd)):
         print("Lux Sensor Test Done")
-        gpio.output(lux_led, gpio.HIGH)
         payloadPub("li", str(light_inten))
         payloadPub("sr", str(solar_radi))
         payloadPub("luxCK", "OK")
     else:
         print("Lux Sensor Test Failed")
-        gpio.output(lux_led, gpio.LOW)
         payloadPub("li", str(light_inten)+" : Failed")
         payloadPub("sr", str(solar_radi)+" : Failed")
         payloadPub("luxCK", "ERR")
@@ -358,7 +344,6 @@ def mqttValueClear():
     payloadPub("wsCK", "WT")
     payloadPub("drCK", "WT")
     payloadPub("luxCK", "WT")
-    payloadPub("serialErr", "OK")
 
 #option for change the setpoint and check the setpoints --> This should happen before the main loop
 
@@ -405,20 +390,7 @@ def optionCheck():
 
 
 def gpioclean():
-    gpio.output(ts_led, gpio.LOW)
-    gpio.output(sd_led, gpio.LOW)
-    gpio.output(imei_led, gpio.LOW)
-    gpio.output(ssm_led, gpio.LOW)
-    gpio.output(psm_led, gpio.LOW)
-    gpio.output(bme_led, gpio.LOW)
-    gpio.output(lw_led, gpio.LOW)
-    gpio.output(ws_led, gpio.LOW)
-    gpio.output(dr_led, gpio.LOW)
-    gpio.output(st_led, gpio.LOW)
-    gpio.output(lux_led, gpio.LOW)
-    gpio.output(pass_led, gpio.LOW)
     gpio.output(ip_start, gpio.HIGH)
-    gpio.output(pass_led, gpio.HIGH)
     bs.gReset = 0
     bs.gStart = 0
 
@@ -441,7 +413,6 @@ while True:
    # print("Press Start Button.. \nButton State: ", gpio.input(
  #       start_button), "\nReset Button: ", gpio.input(reset_button))
     time.sleep(1)
-    ser.close()
     mqttValueClear()
     #print("G Start: ", bs.gStart, ", G Reset: ",bs.gReset)
     checkCsv = 0
@@ -453,9 +424,7 @@ while True:
         bs.gStart = 0
         temp = 0
         setPointPub()
-        ser.open()
         gpio.output(ip_start, gpio.LOW)
-        gpio.output(pass_led, gpio.LOW)
         while temp == 0:
             if ((gpio.input(reset_button) == 0) or (bs.gReset == 1)):
                 print("\n***********************************")
@@ -465,119 +434,113 @@ while True:
                 ser.close()
                 temp = 1
                 break
-            try:
-                client.subscribe("button")
-                cc = ser.readline()
-                #cc = str(cc, 'utf-8')
-                cc = cc.rstrip('\r\n').lstrip()  # remove r' (raw string)
+            client.subscribe("button")
+            cc = ser0.readline()
+            cc = cc.rstrip('\r\n').lstrip()  # remove r' (raw string)
 
-            # cc = str(cc, 'utf-8') #remove b' (byte string to string)
-            #    print(cc)
-                if(len(cc) > 0):  # len should be greater than 0
-                    #print(".")
-                    payloadPub("serial", str(cc))
-                    print(cc)
-                    #time.sleep(0.5)
-                    if(cc == "Device Powered ON"):
-                        print("Device Truned ON Successfuly")
-                        gpio.output(ts_led, gpio.HIGH)
-                        payloadPub("ds", "OK")
-                    if(cc == "Lux Available = 1"):
-                        print("\n***********************************")
-                        print("Lux Sensor Connected")
+           # cc = str(cc, 'utf-8') #remove b' (byte string to string)
+        #    print(cc)
+            if(len(cc) > 0):  # len should be greater than 0
+                #print(".")
+                payloadPub("serial", str(cc))
+                print(cc)
+                #time.sleep(0.5)
+                if(cc == "Device Powered ON"):
+                    print("Device Truned ON Successfuly")
+                    gpio.output(ts_led, gpio.HIGH)
+                    payloadPub("ds", "OK")
+                if(cc == "Lux Available = 1"):
+                    print("\n***********************************")
+                    print("Lux Sensor Connected")
+                    print("***********************************")
+
+                if(cc == "Rain Counter Available = 1"):
+                   print("\n***********************************")
+                   print("Rain Sensor Connected")
+                   print("***********************************")
+
+                if(cc == "Rain counter initilization done.."):
+                    print("\n***********************************")
+                    print("Rain Counter Initilization Done. Do 4 Tik")
+                    print("***********************************")
+
+                if(cc == "<<< MSG: SD card initialization Successful! >>>"):
+                    print("SD Card Detected Process Done")
+                    gpio.output(sd_led, gpio.HIGH)
+                    payloadPub("sd", "OK")
+                    checkCsv = 1
+
+                if(cc == "<<< WARNING: SD card initialization failed / Not Detected! >>>"):
+                    print("SD Card Detected Process Done")
+                    gpio.output(sd_led, gpio.LOW)
+                    payloadPub("sd", "ERR")
+                    checkCsv = 0
+                    
+                try:
+                    if(cc.index("Up-time:")):
+                        res = [int(i) for i in cc.split() if i.isdigit()]
+                        payloadPub("uptimeValue", str(res))
+                        if res[0] > 3 and res[0]<6:
+                            payloadPub("uptime", "OK")
+                        else:
+                            payloadPub("uptime", "ERR")
+                except:
+                    tempTry = 0
+
+                if(cc == "mcu sleep"):
+                    print("\n***********************************")
+                    print("Sleep Mode")
+                    print("***********************************")
+                    payloadPub("lastTestTime", str(DateTime()))
+                    temp = 1
+                try:
+                    if(cc[0] == '{'):  # JSON fromat starts from {
+                        tempJson = json.loads(cc)
+                        imei = tempJson.get("Z1")
+                        imeiF = str(imei.encode("utf-8"))
+                        hw_ver = float(tempJson.get("Z4"))
+                        firm_ver = float(tempJson.get("Z8"))
+                        air_temp = float(tempJson["Z5"]["A"])
+                        air_pressure = float(tempJson["Z5"]["B"])
+                        air_humidity = float(tempJson["Z5"]["C"])
+                        leaf_wetness = int(tempJson["Z5"]["D"])
+                        rain = float(tempJson["Z5"]["G"])
+                        wind_dir = tempJson["Z5"]["F"]
+                        wind_dir = str(wind_dir.encode("utf-8"))
+                        wind_speed = float(tempJson["Z5"]["E"])
+                        soil_temp = float(tempJson["Z5"]["H"])
+                        p_soil_mois = int(tempJson["Z5"]["I"])
+                        s_soil_mois = int(tempJson["Z5"]["J"])
+                        light_int = tempJson["Z5"]["O"]
+                        solar_radi = tempJson["Z5"]["P"]
+                        #print("IMEI number: ", tempJson.get("Z1"))
                         print("***********************************")
-
-                    if(cc == "Rain Counter Available = 1"):
-                        print("\n***********************************")
-                        print("Rain Sensor Connected")
+                        print("IMEI: ", imeiF)
+                        print("Hardware Version: ", hw_ver)
+                        print("firmware Version: ", firm_ver)
+                        print("Air Temperature: ", air_temp)
+                        print("Air Pressure: ", air_pressure)
+                        print("Air Humidity: ", air_humidity)
+                        print("Leaf Wetness: ", leaf_wetness)
+                        print("Rain in mm: ", rain)
+                        print("Wind Direction: ", wind_dir)
+                        print("Wind Speed: ", wind_speed)
+                        print("Soil Temperature: ", soil_temp)
+                        print("Primary Soil Mositure: ", p_soil_mois)
+                        print("Secondary Soil Moisture: ", s_soil_mois)
+                        print("Light Intensity: ", light_int)
+                        print("Solar Radiation: ", solar_radi)
                         print("***********************************")
-
-                    if(cc == "Rain counter initilization done.."):
-                        print("\n***********************************")
-                        print("Rain Counter Initilization Done. Do 4 Tik")
-                        print("***********************************")
-
-                    if(cc == "<<< MSG: SD card initialization Successful! >>>"):
-                        print("SD Card Detected Process Done")
-                        gpio.output(sd_led, gpio.HIGH)
-                        payloadPub("sd", "OK")
-                        checkCsv = 1
-
-                    if(cc == "<<< WARNING: SD card initialization failed / Not Detected! >>>"):
-                        print("SD Card Detected Process Done")
-                        gpio.output(sd_led, gpio.LOW)
-                        payloadPub("sd", "ERR")
-                        checkCsv = 0
-                        
-                    try:
-                        if(cc.index("Up-time:")):
-                            res = [int(i) for i in cc.split() if i.isdigit()]
-                            payloadPub("uptimeValue", str(res))
-                            if res[0] > 3 and res[0]<6:
-                                payloadPub("uptime", "OK")
-                            else:
-                                payloadPub("uptime", "ERR")
-                    except:
-                        tempTry = 0
-
-                    if(cc == "mcu sleep"):
-                        print("\n***********************************")
-                        print("Sleep Mode")
-                        print("***********************************")
-                        payloadPub("lastTestTime", str(DateTime()))
-                        temp = 1
-                    try:
-                        if(cc[0] == '{'):  # JSON fromat starts from {
-                            tempJson = json.loads(cc)
-                            imei = tempJson.get("Z1")
-                            imeiF = str(imei.encode("utf-8"))
-                            hw_ver = float(tempJson.get("Z4"))
-                            firm_ver = float(tempJson.get("Z8"))
-                            air_temp = float(tempJson["Z5"]["A"])
-                            air_pressure = float(tempJson["Z5"]["B"])
-                            air_humidity = float(tempJson["Z5"]["C"])
-                            leaf_wetness = int(tempJson["Z5"]["D"])
-                            rain = float(tempJson["Z5"]["G"])
-                            wind_dir = tempJson["Z5"]["F"]
-                            wind_dir = str(wind_dir.encode("utf-8"))
-                            wind_speed = float(tempJson["Z5"]["E"])
-                            soil_temp = float(tempJson["Z5"]["H"])
-                            p_soil_mois = int(tempJson["Z5"]["I"])
-                            s_soil_mois = int(tempJson["Z5"]["J"])
-                            light_int = tempJson["Z5"]["O"]
-                            solar_radi = tempJson["Z5"]["P"]
-                            #print("IMEI number: ", tempJson.get("Z1"))
-                            print("***********************************")
-                            print("IMEI: ", imeiF)
-                            print("Hardware Version: ", hw_ver)
-                            print("firmware Version: ", firm_ver)
-                            print("Air Temperature: ", air_temp)
-                            print("Air Pressure: ", air_pressure)
-                            print("Air Humidity: ", air_humidity)
-                            print("Leaf Wetness: ", leaf_wetness)
-                            print("Rain in mm: ", rain)
-                            print("Wind Direction: ", wind_dir)
-                            print("Wind Speed: ", wind_speed)
-                            print("Soil Temperature: ", soil_temp)
-                            print("Primary Soil Mositure: ", p_soil_mois)
-                            print("Secondary Soil Moisture: ", s_soil_mois)
-                            print("Light Intensity: ", light_int)
-                            print("Solar Radiation: ", solar_radi)
-                            print("***********************************")
-                            check(imeiF, hw_ver, firm_ver, air_temp, air_pressure, air_humidity, leaf_wetness,
-                                rain, wind_dir, wind_speed, soil_temp, p_soil_mois, s_soil_mois, light_int, solar_radi)
-                            if(checkCsv==1):
-                                checkCsv = 0
-                                csvWrite(imeiF, hw_ver, firm_ver, air_temp, air_pressure, air_humidity, leaf_wetness,
-                                        rain, wind_dir, wind_speed, soil_temp, p_soil_mois, s_soil_mois, light_int, solar_radi)
-                    except Exception as err:
-                        print("Error: ", err)
-                        print("Press Emergency Reset Button")
-                        payloadPub("serial", "Err"+str(err)+", Press Emergency Reset Button")
-            except Exception as err:
-                #print("Serial Data Error!!")
-                print("Error: ", err)
-                payloadPub("serialErr", "ERR")
+                        check(imeiF, hw_ver, firm_ver, air_temp, air_pressure, air_humidity, leaf_wetness,
+                            rain, wind_dir, wind_speed, soil_temp, p_soil_mois, s_soil_mois, light_int, solar_radi)
+                        if(checkCsv==1):
+                            checkCsv = 0
+                            csvWrite(imeiF, hw_ver, firm_ver, air_temp, air_pressure, air_humidity, leaf_wetness,
+                                    rain, wind_dir, wind_speed, soil_temp, p_soil_mois, s_soil_mois, light_int, solar_radi)
+                except Exception as err:
+                    print("Error: ", err)
+                    print("Press Emergency Reset Button")
+                    payloadPub("serial", "Err"+str(err)+", Press Emergency Reset Button")
 
 
             if gpio.input(reset_button) == 0:

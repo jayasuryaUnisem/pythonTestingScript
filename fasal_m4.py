@@ -14,6 +14,9 @@ broker = "192.168.1.15"
 class buttonState:
     gStart = 0
     gReset = 0
+    ftStatus = 0
+    fset = 0
+    fReset = 0
 
 bs = buttonState()
 
@@ -43,6 +46,22 @@ def on_message(client, userdata, message):
         print("Stop pressed")
     elif tempPayload == "estop":
         restart_program()
+    elif tempPayload == "serialReset":
+        print("Seiral Close")
+        ser.close()
+        time.sleep(2)
+        ser.open()
+    elif tempPayload == "flash":
+        print("Flash Pressed")
+        bs.ftStatus = 1
+    elif tempPayload == "test":
+        print("Testing Button Pressed")
+        bs.ftStatus = 0
+        bs.fReset = 0
+    elif tempPayload == "flashStart":
+        bs.fset = 1
+    elif tempPayload == "fReset":
+        bs.fReset = 1
     tempPayload = ""
 
 
@@ -346,6 +365,7 @@ def mqttValueClear():
     payloadPub("st", "")
     payloadPub("li", "")
     payloadPub("sr", "")
+    payloadPub("serial", "")
     payloadPub("uptime", "WT")
     payloadPub("uptimeValue", "WT")
     payloadPub("testStatus", "OFF")
@@ -359,6 +379,12 @@ def mqttValueClear():
     payloadPub("drCK", "WT")
     payloadPub("luxCK", "WT")
     payloadPub("serialErr", "OK")
+    payloadPub("TestLed","0")
+    payloadPub("FlashLed", "0")
+    payloadPub("flashing", "0")
+    client.subscribe("startFlash")
+    client.subscribe("serialReset")
+    client.subscribe("button")
 
 #option for change the setpoint and check the setpoints --> This should happen before the main loop
 
@@ -445,10 +471,59 @@ while True:
     mqttValueClear()
     #print("G Start: ", bs.gStart, ", G Reset: ",bs.gReset)
     checkCsv = 0
-    if ((gpio.input(start_button) == 0) or (bs.gStart == 1)):
+    #print("FT Status Value: ", bs.ftStatus)
+    if(bs.ftStatus == 1):
+        tempWhile = 0
+        payloadPub("FlashLed", "2")
+        payloadPub("TestLed", "1")
+        ser.close()
+        while tempWhile == 0:
+            gpio.output(ip_start, gpio.LOW)
+            payloadPub("serial", "Press Flash button")
+            if(bs.fset==1):
+                payloadPub("serial", "Flashing Started...")
+                bs.fset = 0
+                fstatus = os.system("stm32loader -p /dev/ttyUSB0 -e -w -v fasal-3p0-SensorTest-RevC-29June2021-v1p7.bin")
+                tempSer = 0
+                print("Flash Status: ", fstatus) 
+                if fstatus==0:
+                    print("Flashing and Verfication Done")
+                    payloadPub("serial", "Flash and Verfication Done")
+                    payloadPub("flashing","2")
+                    payloadPub("lastTestTime", str(DateTime()))
+                    gpio.output(ip_start, gpio.HIGH)
+                    tempWhile = 1
+                    fset = 0
+                    time.sleep(5)
+                    while bs.fReset == 0:
+                        tempcc = 0
+                    bs.fReset = 0
+                else:
+                    print("Flashing and Verfication Failed")
+                    payloadPub("serial", "Flash and Verfication Failed")
+                    payloadPub("flashing","1")
+                    payloadPub("lastTestTime", str(DateTime()))
+                    while bs.fReset == 0:
+                        tempcc = 0
+                    bs.fReset = 0
+                tempWhile = 1
+            if bs.ftStatus==0:
+                    gpio.output(ip_start, gpio.HIGH)
+                    tempWhile = 1
+            time.sleep(1)
+    else:
+        payloadPub("ftStatus", "0")
+        payloadPub("TestLed","2")
+        payloadPub("FlashLed", "1")
+
+    if (((gpio.input(start_button) == 0) or (bs.gStart == 1)) and bs.ftStatus ==0):
+        payloadPub("TestLed","2")
+        payloadPub("FlashLed", "1")
         print("***********************************")
         print("Process Started!!")
         print("***********************************")
+        #gpio.output(ip_start, gpio.HIGH)
+        time.sleep(0.3)
         payloadPub("testStatus", "ON")
         bs.gStart = 0
         temp = 0
