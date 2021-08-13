@@ -1,0 +1,5 @@
+Date Time,IMEI,SD Card,HW FW, SW FW,Air Temp,Air Pressure,AIr Humidity,Lead Wetness,Rain,Wind Die,Wind Speed,Soil Temp,P Soil Mois,S Soil Mois,Light Inten, Solar Radi,Remarks
+<function DateTime at 0xb6cfcbb0>,868922052663636,OK,3.0,2.0,-9.0,-9.0,-9.0,0,0.0,NW,0.0,-9.0,48,48,-9,0
+13/08/21 17:59:18,868922052663636,OK,3.0,2.0,-9.0,-9.0,-9.0,0,0.0,NW,0.0,-9.0,48,48,-9,0
+13/08/21 18:01:31,868922052663636,ERR,3.0,2.0,-9.0,-9.0,-9.0,0,0.0,NW,0.0,-9.0,48,48,-9,0
+13/08/21 18:22:03,868922052663636,OK,3.0,2.0,-9.0,-9.0,-9.0,0,0.0,NW,0.0,-9.0,48,48,-9,0

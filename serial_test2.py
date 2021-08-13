@@ -12,6 +12,18 @@ import paho.mqtt.client as mqtt
 broker = "192.168.1.15"  # --> Broker IP address, Here Raspberry is Broker (Note: IP its Dynamic not static)
 
 
+USB0csvFileName = "USB0_testReport.csv"
+USB1csvFileName = "USB1_testReport.csv"
+USB2csvFileName = "USB2_testReport.csv"
+USB3csvFileName = "USB3_testReport.csv"
+
+txtUSB0FileName = "testReport_USB0.txt"
+txtUSB1FileName = "testReport_USB1.txt"
+txtUSB2FileName = "testReport_USB2.txt"
+txtUSB3FileName = "testReport_USB3.txt"
+
+
+
 ts_led = 21
 sd_led = 20
 imei_led = 16
@@ -80,6 +92,10 @@ class buttonState:  #  --> this class used for static variables
     usb2_flash_reset = 0
     usb3_flash_reset = 0
 
+    USB0_sd_status = 0
+    USB1_sd_status = 0
+    USB2_sd_status = 0
+    USB3_sd_status = 0
 
 bs = buttonState()
 
@@ -102,6 +118,102 @@ setP_ssm_min = 5900
 setP_ssm_max = 8000
 setP_li = 2
 setP_rd = 5
+
+
+def FileCheck():
+    arr = os.listdir('.')
+    for i in range(4):
+        if "USB"+str(i)+"_testReport.csv" in arr:
+            print("File alread Created!!")
+        else:
+            file = open("USB"+str(i)+"_testReport.csv", "w")
+            file.write("Date Time,IMEI,SD Card,HW FW, SW FW,Air Temp,Air Pressure,AIr Humidity,Lead Wetness,Rain,Wind Die,Wind Speed,Soil Temp,P Soil Mois,S Soil Mois,Light Inten, Solar Radi,Remarks\n")
+            print("File Created Now")
+            file.close()
+
+    try:
+        if txtUSB0FileName in arr:
+            print("USB0 file alread Created!!")
+        else:
+            file = open(txtUSB0FileName, "w")
+            print("USB0 file created!! Now")
+            file.close()
+
+        if txtUSB1FileName in arr:
+            print("USB1 file alread Created")
+        else:
+            file = open(txtUSB1FileName, "w")
+            print("USB1 file created now!!")
+            file.close()
+
+        if txtUSB2FileName in arr:
+            print("USB2 file alread Created")
+        else:
+            file = open(txtUSB2FileName, "w")
+            print("USB2 file created now!!")
+            file.close()
+        
+        if txtUSB3FileName in arr:
+            print("USB3 file alread Created")
+        else:
+            file = open(txtUSB3FileName, "w")
+            print("USB3 file created now!!")
+            file.close()
+    except Exception as err:
+        print("USB txt file creating Err: ", err)
+        
+FileCheck()
+
+
+def txtWriteValue(payload, port):
+    if port == port0:
+        file = open(txtUSB0FileName, "a")
+        if payload == "Device Powered ON":
+            tempPayload = "\n***********************************\n" + DateTime()+"\n"+str(payload)
+            file.write(tempPayload+"\n")
+        elif payload == "mcu sleep":
+            tempPayload = payload + "\n***********************************\n"
+            file.write(tempPayload+"\n")
+        else:
+            file.write(str(payload)+"\n")
+        file.close()
+
+    if port == port1:
+        file = open(txtUSB1FileName, "a")
+        if payload == "Device Powered ON":
+            tempPayload = "***********************************\n" + DateTime()+"\n"+str(payload)
+            file.write(tempPayload+"\n")
+        elif payload == "mcu sleep":
+            tempPayload = payload + "\n***********************************\n"
+            file.write(tempPayload+"\n")
+        else:
+            file.write(str(payload)+"\n")
+        file.close()
+
+    if port == port2:
+        file = open(txtUSB2FileName, "a")
+        if payload == "Device Powered ON":
+            tempPayload = "***********************************\n" + DateTime()+"\n"+str(payload)
+            file.write(tempPayload+"\n")
+        elif payload == "mcu sleep":
+            tempPayload = payload + "\n***********************************\n" 
+            file.write(tempPayload+"\n")
+        else:
+            file.write(str(payload)+"\n")
+        file.close()
+
+    if port == port3:
+        file = open(txtUSB3FileName, "a")
+        if payload == "Device Powered ON":
+            tempPayload = "***********************************\n" + DateTime()+"\n"+str(payload)
+            file.write(tempPayload+"\n")
+        elif payload == "mcu sleep":
+            tempPayload = payload + "\n***********************************\n"
+            file.write(tempPayload+"\n")
+        else:
+            file.write(str(payload)+"\n")
+        file.close()
+
 
 def setPointPub():
     payloadPub(str("sp_hw"), str(setP_hw))
@@ -146,7 +258,7 @@ def restart_program():
 # The callback for when the client connects to the broker
 def on_connect(client, userdata, flags, rc):
     # Print result of connection attempt
-    print("Connected with result code {0}".format(str(rc)))
+    print("Connected with result code Update_081321 {0}".format(str(rc)))
     client.subscribe("button") 
 
 def on_message(client, userdata, message):
@@ -290,7 +402,8 @@ def payloadPub(topic, payload):
         time.sleep(0.1) 
 
 
-def checkValue(imei, air_temp, air_p, air_humidity, leaf_wetness, rain, wind_dir, wind_speed, soil_temp, p_soil_mois, s_soil_mois, light_inten, solar_radi, port):
+def checkValue(imei, hw_ver, firm_ver, air_temp, air_p, air_humidity, leaf_wetness, rain, wind_dir, wind_speed, soil_temp, p_soil_mois, s_soil_mois, light_inten, solar_radi, port):
+    tempSDstatus = eval("bs."+port+"_sd_status")
     print("***********************************")
     if(len(imei) == 15):
         print("IMEI Done")
@@ -380,7 +493,12 @@ def checkValue(imei, air_temp, air_p, air_humidity, leaf_wetness, rain, wind_dir
         payloadPub("li", str(light_inten)+" : Failed")
         payloadPub("sr", str(solar_radi)+" : Failed")
         payloadPub(port+"_LUX_led", "ERR")
-
+    
+    file = open(port+"_testReport.csv", "a")
+    file.write(str(DateTime())+","+str(imei)+","+str(tempSDstatus)+","+str(hw_ver)+","+str(firm_ver)+","+str(air_temp)+","+str(air_p)+","+str(air_humidity)+","+str(leaf_wetness)+","+str(rain)+","+str(wind_dir)+","+str(wind_speed)+","+str(soil_temp)+","+str(p_soil_mois)+","+str(s_soil_mois)+","+str(light_inten)+","+str(solar_radi)+"\n")
+    time.sleep(0.01)
+    file.close()
+    exec("bs."+port+"_sd_status=0")
     print("***********************************")
 
 
@@ -395,10 +513,12 @@ def functionCheck(payload, port):
     elif payload == "<<< MSG: SD card initialization Successful! >>>":
         print("SD Card Done")
         payloadPub(port+"_SD_led", "OK")
+        exec("bs."+port+"_sd_status='OK'")
     
     elif payload == "<<< WARNING: SD card initialization failed / Not Detected! >>>":
         print("SD not Detected")
         payloadPub(port+"_SD_led", "ERR")
+        exec("bs."+port+"_sd_status='ERR'")
     
     elif payload == "mcu sleep":
         print("\n***********************************")
@@ -410,7 +530,7 @@ def functionCheck(payload, port):
             bs.usb1_start = 0
         if port == "USB2":
             bs.usb2_start = 0
-        if port == "USB2":
+        if port == "USB3":
             bs.usb3_start = 0
     try:
         if(payload[0] == '{'):  # JSON fromat starts from {
@@ -450,11 +570,11 @@ def functionCheck(payload, port):
             print("Light Intensity: ", light_int)
             print("Solar Radiation: ", solar_radi)
             print("***********************************")                               
-            checkValue(imeiF, air_temp, air_pressure, air_humidity, leaf_wetness,
+            checkValue(imeiF, hw_ver, firm_ver, air_temp, air_pressure, air_humidity, leaf_wetness,
             rain, wind_dir, wind_speed, soil_temp, p_soil_mois, s_soil_mois, light_int, solar_radi, port)               
     except Exception as err:
         print("Error: ", err)
-        payloadPub(port, err)     
+        payloadPub(port, str(err))     
           
     try:
         if(payload.index("Up-time:")):
@@ -549,6 +669,7 @@ while True:
                 cc = ser.readline().rstrip('\r\n').lstrip()
                 if len(cc)>0:
                     print("USB0: ", cc)
+                    txtWriteValue(cc, port0)
                     functionCheck(cc, "USB0")
         else:
             payloadPub("USB0_TS_led", "ERR")
@@ -561,6 +682,7 @@ while True:
                 cc = ser.readline().rstrip('\r\n').lstrip()
                 if len(cc)>0:
                     print("USB1: ", cc)
+                    txtWriteValue(cc, port1)
                     functionCheck(cc, "USB1")
         else:
             payloadPub("USB1_TS_led", "ERR")
@@ -573,6 +695,7 @@ while True:
                 cc = ser.readline().rstrip('\r\n').lstrip()
                 if len(cc)>0:
                     print("USB2: ", cc)
+                    txtWriteValue(cc, port2)
                     functionCheck(cc, "USB2")
         else:
             payloadPub("USB2_TS_led", "ERR")
@@ -585,6 +708,7 @@ while True:
                 cc = ser.readline().rstrip('\r\n').lstrip()
                 if len(cc)>0:
                     print("USB3: ", cc)
+                    txtWriteValue(cc, port3)
                     functionCheck(cc, "USB3")
         else:
             payloadPub("USB3_TS_led", "ERR")

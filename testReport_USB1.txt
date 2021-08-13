@@ -1,0 +1,174 @@
+***********************************
+13/08/21 18:42:48
+Device Powered ON
+****************************************************
+Fasal™. Grow More, Grow Better!
+Wolkus Technology Solutions Private Limited, Bangalore, India.
+***  Sensor Test Code  ***
+****************************************************
+Hardware Version: 3.0
+Firmware Release Version: 2.0
+Code-Base Revision: 1.0
+Code Compilation Date: Jun 29 2021; 16:29:30
+Device UUID: ff506695553846687105042
+Flash Size: 128KB
+Device Up-time: 4 Seconds
+****************************************************
+----------------------------------------------
+Air T/H/P Available = 0
+Rain Counter Available = 0
+Lux Available = 0
+----------------------------------------------
+Initilizing SD card..
+<<< WARNING: SD card initialization failed / Not Detected! >>>
+Switching ON modem
+0 Starting up...
+1 Starting up...
+2 Starting up...
+Modem Details: 
+ATI
+Quectel
+EC20F
+Revision: EC20CEFDLGR06A06M1G
+OK
+**********************
+IMEI: 868922052637259
+Length: 15
+**********************
+OK
+AT+CPIN?
++CME ERROR: 10
+Checking sim card..
+<<< ERROR: sim not detected!! >>>
+**********************
+ICCID: 000
+Length: 3
+**********************
+0 powering off...
+1 powering off...
+PowerOffModem out
+****************************************************
+Device setup complete!
+****************************************************
+main start
+<<<  MSG: Getting Sensor Data  >>>
+Time = 
+BME280 Not Found!
+Air Temperature = -9.00*C
+Air Pressure = -9.00Pa
+Air Humidity =  -9.00%RH
+Leafwetness Analog Value = 2397
+Leaf Wetness = 86 %
+Primary Soil Moisture = 50 Hz
+Secondary Soil Moisture = 50 Hz
+Soil Temperature = 0.00*C
+Rain in mm =  -9.00
+Wind Direction = NE
+Wind Speed = 0.00
+Lux Sensor not detected!
+Light Intensity = -9Lx
+Solar Radiation Analog Value = 1686
+Solar Radiation = 42%
+Getting Battery Status
+Cellular Signal Quality = 0
+{"Z1":"868922052637259","Z2":"","Z3":"","Z7":"4","Z4":3.0,"Z8":2.0,"Z5":{"A":-9.00,"B":-9.00,"C":-9.00,"D":86,"E":0.00,"F":"NE","G":-9.00,"H":0.00,"I":50,"J":50,"O":-9,"P":42,"R":-9,"S":-9,"V":0}}
+**********************************************
+<<<  MSG: reading sensors completed!  >>>
+Rain count set to 0.
+Going to sleep...
+****************************************************
+Device Operation Time = 67 Seconds
+Device Sleep Interval = 80 Seconds
+Adjusted Sleep Interval = 11 Seconds
+****************************************************
+Device sleep time = 11
+mcu sleep
+***********************************
+
+***********************************
+13/08/21 18:44:30
+Device Powered ON
+****************************************************
+Fasal™. Grow More, Grow Better!
+Wolkus Technology Solutions Private Limited, Bangalore, India.
+***  Sensor Test Code  ***
+****************************************************
+Hardware Version: 3.0
+Firmware Release Version: 2.0
+Code-Base Revision: 1.0
+Code Compilation Date: Jun 29 2021; 16:29:30
+Device UUID: ff506695553846687105042
+Flash Size: 128KB
+Device Up-time: 4 Seconds
+****************************************************
+----------------------------------------------
+Air T/H/P Available = 0
+Rain Counter Available = 0
+Lux Available = 0
+----------------------------------------------
+Initilizing SD card..
+<<< WARNING: SD card initialization failed / Not Detected! >>>
+Switching ON modem
+0 Starting up...
+1 Starting up...
+2 Starting up...
+Modem Details: 
+ATI
+Quectel
+EC20F
+Revision: EC20CEFDLGR06A06M1G
+OK
+**********************
+IMEI: 868922052637259
+Length: 15
+**********************
+OK
+AT+CPIN?
++CME ERROR: 10
+Checking sim card..
+<<< ERROR: sim not detected!! >>>
+**********************
+ICCID: 000
+Length: 3
+**********************
+0 powering off...
+1 powering off...
+PowerOffModem out
+****************************************************
+Device setup complete!
+****************************************************
+main start
+<<<  MSG: Getting Sensor Data  >>>
+Time = 
+BME280 Not Found!
+Air Temperature = -9.00*C
+Air Pressure = -9.00Pa
+Air Humidity =  -9.00%RH
+Leafwetness Analog Value = 2352
+Leaf Wetness = 84 %
+Primary Soil Moisture = 50 Hz
+Secondary Soil Moisture = 50 Hz
+Soil Temperature = 0.00*C
+Rain in mm =  -9.00
+Wind Direction = NE
+Wind Speed = 0.00
+Lux Sensor not detected!
+Light Intensity = -9Lx
+Solar Radiation Analog Value = 1558
+Solar Radiation = 39%
+Getting Battery Status
+Cellular Signal Quality = 0
+{"Z1":"868922052637259","Z2":"","Z3":"","Z7":"4","Z4":3.0,"Z8":2.0,"Z5":{"A":-9.00,"B":-9.00,"C":-9.00,"D":84,"E":0.00,"F":"NE","G":-9.00,"H":0.00,"I":50,"J":50,"O":-9,"P":39,"R":-9,"S":-9,"V":0}}
+**********************************************
+<<<  MSG: reading sensors completed!  >>>
+Rain count set to 0.
+Going to sleep...
+****************************************************
+Device Operation Time = 69 Seconds
+Device Sleep Interval = 80 Seconds
+Adjusted Sleep Interval = 9 Seconds
+****************************************************
+Device sleep time = 9
+mcu sleep
+***********************************
+
